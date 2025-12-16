@@ -3,8 +3,15 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "author": "Nestor Cortina <nexckycort@gmail.com>",
+  "license": "MIT",
   "scripts": {
     "postinstall": "lefthook install"
+  },
+  "homepage": "https://github.com/bloque-app/bloque-payments#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bloque-app/bloque-payments"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
