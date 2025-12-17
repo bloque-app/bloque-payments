@@ -2,3 +2,4 @@
 minimumReleaseAge = 259200 # seconds
 
 exact = true
+linker = "isolated"
