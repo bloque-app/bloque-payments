@@ -11,13 +11,9 @@ customElements.define('pse-payment-form', PSEPaymentForm);
 customElements.define('cash-payment-form', CashPaymentForm);
 
 export { BloqueCheckout } from './bloque-checkout';
-export { PAYMENT_METHODS } from './types';
 export type {
   AppearanceConfig,
   CheckoutConfig,
-  PaymentData,
-  PaymentFormData,
-  PaymentMethod,
-  PaymentMethodType,
-  PaymentResponse,
+  PaymentSubmitPayload,
 } from './types';
+export { PAYMENT_METHODS } from './types';

@@ -1,15 +1,15 @@
 import { css, html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import './card-payment-form';
+import './cash-payment-form';
+import './payment-method-selector';
+import './pse-payment-form';
 import type {
   AppearanceConfig,
   CheckoutConfig,
-  PaymentFormData,
   PaymentMethodType,
+  PaymentSubmitPayload,
 } from './types';
-import './payment-method-selector';
-import './card-payment-form';
-import './pse-payment-form';
-import './cash-payment-form';
 
 export class BloqueCheckout extends LitElement {
   @state()
@@ -40,12 +40,8 @@ export class BloqueCheckout extends LitElement {
   showMethodSelector = true;
 
   @property({ attribute: false })
-  onSubmit?: (payload: {
-    data: PaymentFormData;
-    type: PaymentMethodType;
-  }) => Promise<void>;
+  onSubmit?: (payload: PaymentSubmitPayload) => Promise<void>;
 
-  // Computed properties
   private get effectiveAvailableMethods(): PaymentMethodType[] {
     return this.config?.payment_methods || this.availableMethods;
   }
@@ -67,7 +63,6 @@ export class BloqueCheckout extends LitElement {
 
   override connectedCallback() {
     super.connectedCallback();
-    // Si solo hay un método disponible, seleccionarlo automáticamente
     if (this.effectiveAvailableMethods.length === 1) {
       this.selectedMethod = this.effectiveAvailableMethods[0];
     }
@@ -75,7 +70,6 @@ export class BloqueCheckout extends LitElement {
 
   override updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
-    // Si cambian los métodos disponibles y solo hay uno, seleccionarlo
     if (
       changedProperties.has('availableMethods') ||
       changedProperties.has('config')
@@ -252,8 +246,9 @@ export class BloqueCheckout extends LitElement {
 
     return html`
       <div class="checkout-container" style="${style}">
-        ${this.showMethodSelector && this.effectiveAvailableMethods.length > 1
-          ? html`
+        ${
+          this.showMethodSelector && this.effectiveAvailableMethods.length > 1
+            ? html`
               <div class="section">
                 <div class="section-title">Selecciona tu método de pago</div>
                 <payment-method-selector
@@ -263,49 +258,58 @@ export class BloqueCheckout extends LitElement {
                 ></payment-method-selector>
               </div>
             `
-          : ''}
-        ${this.selectedMethod
-          ? html`
+            : ''
+        }
+        ${
+          this.selectedMethod
+            ? html`
               <div class="form-container">
-                ${this.error
-                  ? html`
+                ${
+                  this.error
+                    ? html`
                       <div class="error-banner">
                         <span>⚠️</span>
                         <span>${this.error}</span>
                       </div>
                     `
-                  : ''}
+                    : ''
+                }
                 <div class="section-title">Completa la información de pago</div>
                 <div class="form-wrapper">
-                  ${this.isLoading
-                    ? html`
+                  ${
+                    this.isLoading
+                      ? html`
                         <div class="loading-overlay">
                           <div class="spinner"></div>
                         </div>
                       `
-                    : ''}
-                  ${this.selectedMethod === 'card'
-                    ? html`
+                      : ''
+                  }
+                  ${
+                    this.selectedMethod === 'card'
+                      ? html`
                         <card-payment-form
                           .requireEmail=${this.requireEmail}
                           @payment-submitted=${this.handlePaymentSubmitted}
                         ></card-payment-form>
                       `
-                    : this.selectedMethod === 'pse'
-                      ? html`
+                      : this.selectedMethod === 'pse'
+                        ? html`
                           <pse-payment-form
                             @payment-submitted=${this.handlePaymentSubmitted}
                           ></pse-payment-form>
                         `
-                      : html`
+                        : html`
                           <cash-payment-form
                             @payment-submitted=${this.handlePaymentSubmitted}
                           ></cash-payment-form>
-                        `}
+                        `
+                  }
                 </div>
               </div>
             `
-          : ''}
+            : ''
+        }
       </div>
     `;
   }

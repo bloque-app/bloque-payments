@@ -30,13 +30,6 @@ export default {
     outputModule: true,
   },
 
-  externals: {
-    lit: 'lit',
-    'lit-element': 'lit-element',
-    'lit-html': 'lit-html',
-    '@lit/reactive-element': '@lit/reactive-element',
-  },
-
   resolve: {
     extensions: ['.js', '.ts', '.json'],
   },

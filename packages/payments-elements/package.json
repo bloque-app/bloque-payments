@@ -34,6 +34,9 @@
   "scripts": {
     "build": "NODE_ENV=production rspack build && tsc --project tsconfig.build.json",
     "build:watch": "NODE_ENV=development rspack build --watch",
+    "clean": "rm -rf node_modules && rm -rf dist",
+    "check": "biome check --write",
+    "typecheck": "tsgo --noEmit",
     "types": "tsc --project tsconfig.build.json"
   },
   "homepage": "https://github.com/bloque-app/bloque-payments#readme",

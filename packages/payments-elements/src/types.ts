@@ -1,3 +1,7 @@
+import type { CardPaymentFormData } from './card-payment-form';
+import type { CashPaymentFormData } from './cash-payment-form';
+import type { PSEPaymentFormData } from './pse-payment-form';
+
 export type PaymentMethodType = 'card' | 'pse' | 'cash';
 
 export interface PaymentMethod {
@@ -37,37 +41,20 @@ export interface AppearanceConfig {
   fontFamily?: string;
 }
 
-export type PaymentFormData = {
-  cardNumber?: string;
-  cardholderName?: string;
-  expiryMonth?: string;
-  expiryYear?: string;
-  cvv?: string;
-  email?: string;
-  personType?: 'natural' | 'juridica';
-  documentType?: string;
-  documentNumber?: string;
-  bankCode?: string;
-  fullName?: string;
+export type PaymentFormData =
+  | CardPaymentFormData
+  | PSEPaymentFormData
+  | CashPaymentFormData;
+
+type PaymentFormDataMap = {
+  card: CardPaymentFormData;
+  pse: PSEPaymentFormData;
+  cash: CashPaymentFormData;
 };
 
-export type PaymentData = {
-  customer_email?: string;
-  number?: string;
-  cvc?: string;
-  exp_month?: string;
-  exp_year?: string;
-  card_holder?: string;
-  person_type?: 'natural' | 'juridica';
-  document_type?: string;
-  document_number?: string;
-  bank_code?: string;
-  full_name?: string;
-};
-
-export interface PaymentResponse {
-  success: boolean;
-  data?: unknown;
-  error?: string;
-  message?: string;
-}
+export type PaymentSubmitPayload = {
+  [K in keyof PaymentFormDataMap]: {
+    type: K;
+    data: PaymentFormDataMap[K];
+  };
+}[keyof PaymentFormDataMap];
