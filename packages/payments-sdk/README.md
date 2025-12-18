@@ -19,31 +19,28 @@ bun add @bloque/payments-sdk
 ## Quick Start
 
 ```typescript
-import { Bloque } from '@bloque/payments-sdk';
+import { Bloque, type PaymentSubmitPayload } from '@bloque/payments-sdk';
 
-// Initialize the SDK
+// Initialize the SDK (server-side only)
 const bloque = new Bloque({
-  apiKey: 'your-api-key-here',
-  server: 'sandbox', // or 'production'
+  apiKey: process.env.BLOQUE_API_KEY!,
+  server: 'production', // or 'sandbox' for testing
 });
 
-// Create a checkout session
-const checkout = await bloque.checkout.create({
-  name: 'Online Course Purchase',
-  description: 'Complete React Development Course',
-  items: [
-    {
-      name: 'React Course',
-      amount: 99_00, // Amount in cents (USD)
-      quantity: 1,
-    },
-  ],
-  success_url: 'https://yourapp.com/success',
-  cancel_url: 'https://yourapp.com/cancel',
-});
+app.post('/api/payments', async (req, res) => {
+  try {
+    const payload: PaymentSubmitPayload = req.body;
 
-// Redirect user to checkout
-console.log('Checkout URL:', checkout.url);
+    // Create payment using SDK
+    const payment = await bloque.payments.create({
+      payment: payload,
+    });
+
+    res.json({ success: true, payment });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 ```
 
 ## Configuration
@@ -65,6 +62,83 @@ const bloque = new Bloque({
 - **`production`**: For live payments
 
 ## API Reference
+
+### Payments
+
+The payments resource allows you to create payments for existing checkout sessions.
+
+#### Create a Payment
+
+```typescript
+const payment = await bloque.payments.create({
+  checkoutId: string;        // Required: Checkout ID from an existing checkout
+  payment: {
+    type: 'card' | 'pse' | 'cash',
+    data: {
+      // Payment method specific data
+    }
+  }
+});
+```
+
+**Payment Types**:
+
+**Card Payment**:
+```typescript
+{
+  type: 'card',
+  data: {
+    cardNumber: string;        // 16-digit card number
+    cardholderName: string;    // Name on the card
+    expiryMonth: string;       // MM format
+    expiryYear: string;        // YY or YYYY format
+    cvv: string;               // 3-4 digit CVV
+    email?: string;            // Optional customer email
+  }
+}
+```
+
+**PSE Payment** (Colombian online banking):
+```typescript
+{
+  type: 'pse',
+  data: {
+    personType: 'natural' | 'juridica';  // Person type
+    documentType: string;                 // Document type (e.g., 'CC', 'NIT')
+    documentNumber: string;               // Document number
+    bankCode: string;                     // Bank code
+    email: string;                        // Customer email
+  }
+}
+```
+
+**Cash Payment**:
+```typescript
+{
+  type: 'cash',
+  data: {
+    email: string;            // Customer email
+    documentType: string;     // Document type
+    documentNumber: string;   // Document number
+    fullName: string;         // Full name
+  }
+}
+```
+
+**Payment Response**:
+```typescript
+{
+  id: string;                       // Payment ID
+  object: 'payment';                // Object type
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  checkout: Checkout;               // Associated checkout
+  payment_method: 'card' | 'pse' | 'cash';
+  amount: number;                   // Payment amount
+  currency: string;                 // Currency
+  created_at: string;               // Creation timestamp
+  updated_at: string;               // Last update timestamp
+}
+```
 
 ### Checkout
 
@@ -115,6 +189,135 @@ const checkout = await bloque.checkout.create({
 ```
 
 ## Examples
+
+### Processing Payments
+
+```typescript
+import { Bloque, type PaymentSubmitPayload } from '@bloque/payments-sdk';
+
+// Initialize SDK with your API key
+const bloque = new Bloque({
+  apiKey: process.env.BLOQUE_API_KEY!,
+  server: 'production',
+});
+
+// API endpoint handler
+app.post('/api/payments', async (req, res) => {
+  try {
+    // Receive payment data from frontend
+    const payload: PaymentSubmitPayload = req.body;
+
+    // Create payment using SDK
+    const payment = await bloque.payments.create({
+      payment: payload,
+    });
+
+    res.json({ success: true, payment });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+```
+
+### Payment Methods Examples
+
+#### Card Payment
+
+```typescript
+// Receive payload from frontend
+const cardPayment: PaymentSubmitPayload = req.body;
+// Example payload:
+// {
+//   type: 'card',
+//   data: {
+//     cardNumber: '4111111111111111',
+//     cardholderName: 'John Doe',
+//     expiryMonth: '12',
+//     expiryYear: '2025',
+//     cvv: '123',
+//     email: 'john@example.com'
+//   }
+// }
+
+const payment = await bloque.payments.create({
+  payment: cardPayment,
+});
+```
+
+#### PSE Payment (Colombian online banking)
+
+```typescript
+// Receive payload from frontend
+const psePayment: PaymentSubmitPayload = req.body;
+// Example payload:
+// {
+//   type: 'pse',
+//   data: {
+//     personType: 'natural',
+//     documentType: 'CC',
+//     documentNumber: '1234567890',
+//     bankCode: '1022',
+//     email: 'maria@example.com'
+//   }
+// }
+
+const payment = await bloque.payments.create({
+  payment: psePayment,
+});
+```
+
+#### Cash Payment
+
+```typescript
+// Receive payload from frontend
+const cashPayment: PaymentSubmitPayload = req.body;
+// Example payload:
+// {
+//   type: 'cash',
+//   data: {
+//     email: 'carlos@example.com',
+//     documentType: 'CC',
+//     documentNumber: '9876543210',
+//     fullName: 'Carlos García'
+//   }
+// }
+
+const payment = await bloque.payments.create({
+  payment: cashPayment,
+});
+```
+
+### Type-Safe Payment Creation
+
+The `PaymentSubmitPayload` type is a discriminated union that provides automatic type narrowing:
+
+```typescript
+// Backend API handler
+async function handlePayment(payload: PaymentSubmitPayload) {
+  // TypeScript automatically narrows the type based on the 'type' field
+  switch (payload.type) {
+    case 'card':
+      // payload.data is CardPaymentFormData
+      console.log('Processing card ending in:', payload.data.cardNumber.slice(-4));
+      break;
+
+    case 'pse':
+      // payload.data is PSEPaymentFormData
+      console.log('Processing PSE for bank:', payload.data.bankCode);
+      break;
+
+    case 'cash':
+      // payload.data is CashPaymentFormData
+      console.log('Processing cash payment for:', payload.data.fullName);
+      break;
+  }
+
+  // Create payment using SDK
+  return await bloque.payments.create({
+    payment: payload,
+  });
+}
+```
 
 ### Basic Checkout with Single Item
 
@@ -205,13 +408,61 @@ try {
 This SDK is written in TypeScript and includes complete type definitions. You'll get full autocomplete and type checking when using TypeScript or modern editors like VS Code:
 
 ```typescript
-import type { Checkout, CheckoutStatus, CheckoutItem } from '@bloque/payments-sdk';
+import type {
+  // Payment types
+  PaymentSubmitPayload,
+  PaymentResponse,
+  CreatePaymentParams,
+  // Checkout types
+  Checkout,
+  CheckoutStatus,
+  CheckoutItem,
+  CheckoutParams,
+} from '@bloque/payments-sdk';
 
 const item: CheckoutItem = {
   name: 'Product',
   amount: 5000,
   quantity: 1,
 };
+
+// Type-safe payment data
+const cardPayment: PaymentSubmitPayload = {
+  type: 'card',
+  data: {
+    cardNumber: '4111111111111111',
+    cardholderName: 'John Doe',
+    expiryMonth: '12',
+    expiryYear: '2025',
+    cvv: '123',
+  },
+};
+```
+
+**Discriminated Union Types**:
+
+The SDK uses TypeScript discriminated unions for payment types, which enables automatic type narrowing:
+
+```typescript
+// Backend API handler
+async function handlePaymentFromFrontend(payment: PaymentSubmitPayload) {
+  switch (payment.type) {
+    case 'card':
+      // TypeScript knows payment.data is CardPaymentFormData
+      console.log('Card payment for:', payment.data.cardholderName);
+      break;
+    case 'pse':
+      // TypeScript knows payment.data is PSEPaymentFormData
+      console.log('PSE payment, bank:', payment.data.bankCode);
+      break;
+    case 'cash':
+      // TypeScript knows payment.data is CashPaymentFormData
+      console.log('Cash payment for:', payment.data.fullName);
+      break;
+  }
+
+  return await bloque.payments.create({ payment });
+}
 ```
 
 ## Development
@@ -254,4 +505,5 @@ bun run check
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+[MIT](../../LICENSE)
+
