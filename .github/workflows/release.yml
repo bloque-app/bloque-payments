@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - uses: oven-sh/setup-bun@v2
 
       - run: bun install
@@ -27,3 +30,21 @@ jobs:
         run: |
           npm config set "//registry.npmjs.org/:_authToken" "${NPM_TOKEN}"
           bun run publish
+
+      - name: Generate Changelog
+        id: changelog
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 ${GITHUB_REF}^ || echo "")
+          echo "Previous tag: $PREV_TAG"
+
+          if [ -z "$PREV_TAG" ]; then
+            git log --pretty=format:"- %s (%an)" > CHANGELOG.txt
+          else
+            git log $PREV_TAG..${GITHUB_REF_NAME} --pretty=format:"- %s (%an)" > CHANGELOG.txt
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: CHANGELOG.txt
+          files: dist/*
