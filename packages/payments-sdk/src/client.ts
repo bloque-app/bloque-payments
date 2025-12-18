@@ -23,7 +23,10 @@ export class Bloque {
     this.#config = config;
 
     this.#httpClient = new HttpClient({
-      baseURL: 'https: //api.bloque.app/api/payments',
+      baseURL:
+        this.#config.server === 'sandbox'
+          ? 'https://dev.bloque.app/api/payments'
+          : 'https://api.bloque.app/api/payments',
       apiKey: this.#config.apiKey,
       timeout: this.#config.timeout,
       maxRetries: this.#config.maxRetries,
