@@ -39,7 +39,7 @@
   "scripts": {
     "build": "rslib build",
     "dev": "rslib build --watch",
-    "clean": "rm -rf node_modules",
+    "clean": "rm -rf node_modules && rm -rf dist",
     "check": "biome check --write",
     "typecheck": "tsgo --noEmit"
   },
