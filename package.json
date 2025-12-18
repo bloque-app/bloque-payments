@@ -1,11 +1,11 @@
 {
-  "name": "bloque-payments",
+  "name": "payments",
   "private": true,
   "author": "Nestor Cortina <nexckycort@gmail.com>",
   "license": "MIT",
   "scripts": {
     "postinstall": "lefthook install",
-    "build:foundation": "bun --filter @bloque/payments-core build && bun --filter @bloque/payments-sdk build",
+    "build:foundation": "bun --filter @bloque/payments-core build && bun --filter @bloque/payments build",
     "build:ui": "bun --filter @bloque/payments-elements build && bun --filter @bloque/payments-react build",
     "build:packages": "bun run build:foundation && bun run build:ui",
     "build": "bun run build:packages",
