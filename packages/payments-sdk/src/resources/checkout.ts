@@ -48,4 +48,12 @@ export class CheckoutResource extends BaseResource {
       metadata: response.payment.metadata,
     };
   }
+
+  async retrieve(checkoutId: string): Promise<Checkout> {
+    return this.http.get<Checkout>(`/checkout/${checkoutId}`);
+  }
+
+  async cancel(checkoutId: string): Promise<Checkout> {
+    return this.http.post<Checkout>(`/checkout/${checkoutId}/cancel`);
+  }
 }

@@ -188,6 +188,32 @@ const checkout = await bloque.checkout.create({
 }
 ```
 
+#### Retrieve a Checkout
+
+Retrieve the details of an existing checkout by its ID.
+
+```typescript
+const checkout = await bloque.checkout.retrieve('checkout_id_here');
+```
+
+**Parameters**:
+- `checkoutId` (string): The ID of the checkout to retrieve
+
+**Returns**: A `Checkout` object with all the checkout details.
+
+#### Cancel a Checkout
+
+Cancel an existing checkout that hasn't been completed yet.
+
+```typescript
+const checkout = await bloque.checkout.cancel('checkout_id_here');
+```
+
+**Parameters**:
+- `checkoutId` (string): The ID of the checkout to cancel
+
+**Returns**: A `Checkout` object with updated status reflecting the cancellation.
+
 ## Examples
 
 ### Processing Payments
@@ -500,8 +526,8 @@ bun run check
 ## Links
 
 - [Homepage](https://www.bloque.app)
-- [GitHub Repository](https://github.com/bloque-app/bloque-payments)
-- [Issue Tracker](https://github.com/bloque-app/bloque-payments/issues)
+- [GitHub Repository](git+https://github.com/bloque-app/bloque-payments.git)
+- [Issue Tracker](git+https://github.com/bloque-app/bloque-payments.git/issues)
 
 ## License
 
