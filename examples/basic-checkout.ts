@@ -1,4 +1,4 @@
-import { Bloque } from '../packages/payments-sdk/src';
+import { Bloque } from '../packages/payments/src';
 
 async function main() {
   const bloque = new Bloque({

@@ -52,7 +52,7 @@ import { Bloque } from '@bloque/payments';
 
 const bloque = new Bloque({
   apiKey: 'your-api-key-here',    // Required: Your Bloque API key
-  server: 'sandbox',               // Required: 'sandbox' or 'production'
+  mode: 'sandbox',               // Required: 'sandbox' or 'production'
 });
 ```
 
